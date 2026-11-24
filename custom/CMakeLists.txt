@@ -59,22 +59,23 @@ qt_add_resources(${CMAKE_PROJECT_NAME} custom_brand
 )
 
 # ============================================================================
-# Custom Plugin C++ Sources
+# Custom Plugin C++ Sources & Build Configuration
 # ============================================================================
 
-target_sources(${CMAKE_PROJECT_NAME}
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/BGCPlugin.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/BGCPlugin.h
+set(CUSTOM_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/BGCPlugin.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/BGCPlugin.h
+    PARENT_SCOPE
 )
 
-target_include_directories(${CMAKE_PROJECT_NAME}
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+set(CUSTOM_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    PARENT_SCOPE
 )
 
-target_compile_definitions(${CMAKE_PROJECT_NAME}
-    PRIVATE
-        CUSTOMHEADER="BGCPlugin.h"
-        CUSTOMCLASS=BGCPlugin
+set(CUSTOM_DEFINITIONS
+    QGC_CUSTOM_BUILD
+    CUSTOMHEADER="BGCPlugin.h"
+    CUSTOMCLASS=BGCPlugin
+    PARENT_SCOPE
 )
