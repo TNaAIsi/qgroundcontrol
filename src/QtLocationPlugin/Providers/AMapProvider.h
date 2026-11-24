@@ -7,7 +7,7 @@ class AMapProvider final : public MapProvider
 public:
     explicit AMapProvider(MapStyle style);
 
-    static bool isGcj02CorrectionEnabled() { return true; }
+    static bool isGcj02CorrectionEnabled();
 
     bool requiresGcj02Correction() const final { return isGcj02CorrectionEnabled(); }
 
