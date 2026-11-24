@@ -110,7 +110,7 @@ void QGCMAVLinkMessageField::updateValue(const QString &newValue, qreal v)
         emit valueChanged();
     }
 
-    if (!_pSeries || !_chartController || _bucketCount <= 0) {
+    if (!_pSeries || !_chartController || _bucketCount <= 0 || !std::isfinite(v)) {
         return;
     }
 

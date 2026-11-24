@@ -25,6 +25,8 @@ class QGCMAVLinkMessage : public QObject
     Q_PROPERTY(QmlObjectListModel   *fields         READ fields         CONSTANT)
     Q_PROPERTY(bool                 fieldSelected   READ fieldSelected  NOTIFY fieldSelectedChanged)
     Q_PROPERTY(bool                 selected        READ selected       NOTIFY selectedChanged)
+    Q_PROPERTY(bool                 isTranswing       READ isTranswing    CONSTANT)
+    Q_PROPERTY(bool                 isTranswingStatus READ isTranswingStatus CONSTANT)
 
 public:
     explicit QGCMAVLinkMessage(const mavlink_message_t &message, const QString &instanceValue = QString(), QObject *parent = nullptr);
@@ -46,6 +48,8 @@ public:
     QmlObjectListModel *fields() const { return _fields; }
     bool fieldSelected() const { return _fieldSelected; }
     bool selected() const { return _selected; }
+    bool isTranswing() const { return _isTranswing; }
+    bool isTranswingStatus() const { return _isTranswingStatus; }
 
     void updateFieldSelection();
     void update(const mavlink_message_t &message);
@@ -81,4 +85,6 @@ private:
     uint64_t _lastCount = 0;
     bool _fieldSelected = false;
     bool _selected = false;
+    bool _isTranswing = false;
+    bool _isTranswingStatus = false;
 };
