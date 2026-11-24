@@ -39,6 +39,7 @@ set(CUSTOM_BRAND_RESOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoDark.svg"
     "${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoLight.svg"
     "${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoMono.svg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/res/icons/bgc.ico"
 )
 set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoDark.svg"
     PROPERTIES QT_RESOURCE_ALIAS "QGCLogoFull.svg"
@@ -48,6 +49,9 @@ set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoLight
 )
 set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/res/Images/BGCLogoMono.svg"
     PROPERTIES QT_RESOURCE_ALIAS "QGCLogoWhite.svg"
+)
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/res/icons/bgc.ico"
+    PROPERTIES QT_RESOURCE_ALIAS "qgroundcontrol.ico"
 )
 qt_add_resources(${CMAKE_PROJECT_NAME} custom_brand
     PREFIX "/Custom/res"

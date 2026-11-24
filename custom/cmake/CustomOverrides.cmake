@@ -10,3 +10,5 @@ set(QGC_ANDROID_PACKAGE_NAME "com.berthaero.bgc" CACHE STRING "Android package i
 set(QGC_STABLE_BUILD ON CACHE BOOL "Stable build (no Daily suffix)" FORCE)
 set(QGC_APP_DESCRIPTION "BerthAero Ground Control" CACHE STRING "App Description" FORCE)
 set(QGC_APP_COPYRIGHT "Copyright (c) 2026 BerthAero. All rights reserved." CACHE STRING "App Copyright" FORCE)
+set(QGC_MACOS_ICON_PATH "${CMAKE_SOURCE_DIR}/custom/res/icons/bgc.icns" CACHE FILEPATH "macOS application icon path" FORCE)
+set(QGC_MACOS_BUNDLE_ID "com.berthaero.bgc" CACHE STRING "macOS bundle identifier" FORCE)
