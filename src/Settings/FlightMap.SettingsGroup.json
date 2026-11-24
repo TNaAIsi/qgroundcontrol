@@ -6,7 +6,7 @@
             "name": "mapProvider",
             "shortDesc": "Currently selected map provider for flight maps",
             "type": "string",
-            "default": "Bing",
+            "default": "AMap",
             "label": "Currently selected map provider for flight maps",
             "keywords": "3d map"
         },
@@ -14,7 +14,7 @@
             "name": "mapType",
             "shortDesc": "Currently selected map type for flight maps",
             "type": "string",
-            "default": "Hybrid",
+            "default": "Satellite",
             "label": "Currently selected map type for flight maps"
         },
         {
@@ -23,6 +23,15 @@
             "type": "string",
             "default": "Copernicus",
             "label": "Currently selected elevation map provider"
+        },
+        {
+            "name": "amapGcj02Correction",
+            "shortDesc": "Align AMap GCJ-02 tiles to standard WGS-84 GPS coordinates.",
+            "longDesc": "Automatically aligns AMap (AutoNavi) map tiles from GCJ-02 to WGS-84 so vehicle position and mission waypoints match the satellite imagery. Flight controller coordinates always remain WGS-84.",
+            "type": "bool",
+            "default": true,
+            "label": "AMap WGS-84 Offset Correction",
+            "keywords": "amap,gcj02,wgs84,offset,china,map"
         }
     ]
 }

@@ -259,8 +259,8 @@
         },
         {
             "name": "tiandituToken",
-            "shortDesc": "Personal API token for accessing TianDiTu map tiles.",
-            "longDesc": "Your personal access token for TianDiTu maps",
+            "shortDesc": "Free API token from tianditu.gov.cn for zero-offset CGCS2000 TianDiTu map tiles.",
+            "longDesc": "Your personal access token for TianDiTu maps (zero-offset CGCS2000 coordinates, aligned with WGS-84). Free tokens can be obtained at tianditu.gov.cn.",
             "type": "string",
             "default": "",
             "label": "TianDiTu",

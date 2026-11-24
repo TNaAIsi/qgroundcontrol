@@ -16,6 +16,15 @@
             ]
         },
         {
+            "heading": "Coordinate Alignment",
+            "keywords": ["amap", "gcj02", "wgs84", "offset", "alignment", "china"],
+            "controls": [
+                {
+                    "setting": "flightMapSettings.amapGcj02Correction"
+                }
+            ]
+        },
+        {
             "component": "OfflineMapSettings",
             "sectionName": "Offline Maps",
             "keywords": [
