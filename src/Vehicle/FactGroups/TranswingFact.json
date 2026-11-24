@@ -1,0 +1,216 @@
+{
+    "version": 1,
+    "fileType": "FactMetaData",
+    "QGC.MetaData.Facts": [
+        {
+            "name": "wingAngle",
+            "shortDesc": "Measured wing angle",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "wingAngleSetpoint",
+            "shortDesc": "Wing angle setpoint",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "wingAngleRateSetpoint",
+            "shortDesc": "Wing angular rate setpoint",
+            "type": "double",
+            "units": "deg/s",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "wingAngleAccelSetpoint",
+            "shortDesc": "Wing angular acceleration setpoint",
+            "type": "double",
+            "units": "deg/s²",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "wingAngleJerkSetpoint",
+            "shortDesc": "Wing angular jerk setpoint",
+            "type": "double",
+            "units": "deg/s³",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "collectiveTiltAngle",
+            "shortDesc": "Collective thrust tilt angle",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "trackingError",
+            "shortDesc": "Wing tracking error",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "phase",
+            "shortDesc": "Transition phase",
+            "type": "uint8",
+            "enumStrings": "MC,Accelerate,Blend,FixedWing,BackTransition,Unavailable",
+            "enumValues": "0,1,2,3,4,255"
+        },
+        {
+            "name": "fixedWingWeight",
+            "shortDesc": "Fixed-wing control weight",
+            "type": "double",
+            "units": "%",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "feedbackSampleAge",
+            "shortDesc": "Feedback sample age",
+            "type": "double",
+            "units": "ms",
+            "decimalPlaces": 0
+        },
+        {
+            "name": "attitudeError",
+            "shortDesc": "Attitude error",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "altitudeLoss",
+            "shortDesc": "Transition altitude loss",
+            "type": "double",
+            "units": "m",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "collectiveCommand",
+            "shortDesc": "Collective thrust command",
+            "type": "double",
+            "units": "%",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "abortReason",
+            "shortDesc": "Transition abort reason",
+            "type": "uint8",
+            "enumStrings": "None,StateUnavailable,AltitudeLoss,AttitudeError,Timeout,LowAirspeed,TrackingLoss,Unavailable",
+            "enumValues": "0,1,2,3,4,5,6,255"
+        },
+        {
+            "name": "pilotTakeoverAvailable",
+            "shortDesc": "Pilot takeover available",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "pilotControlOwner",
+            "shortDesc": "Pilot control owner",
+            "type": "uint8",
+            "enumStrings": "Inactive,WaitingPilot,Pilot,AutoHoldRequested,Unavailable",
+            "enumValues": "0,1,2,3,255"
+        },
+        {
+            "name": "transitionComplete",
+            "shortDesc": "Transition complete",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "handoverWindowAge",
+            "shortDesc": "Handover window age",
+            "type": "double",
+            "units": "ms",
+            "decimalPlaces": 0
+        },
+        {
+            "name": "tiltError",
+            "shortDesc": "Attitude tilt error",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "headingError",
+            "shortDesc": "Heading error",
+            "type": "double",
+            "units": "deg",
+            "decimalPlaces": 1
+        },
+        {
+            "name": "wingAngleValid",
+            "shortDesc": "Wing angle valid",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "feedbackHealthy",
+            "shortDesc": "Feedback healthy",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "trackingErrorOk",
+            "shortDesc": "Wing tracking within limits",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "flightControlActive",
+            "shortDesc": "Flight control active",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "groundTestActive",
+            "shortDesc": "Ground test active",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "feedbackHoldActive",
+            "shortDesc": "Feedback hold active",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "pilotControlLocked",
+            "shortDesc": "Pilot control locked",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "telemetryFresh",
+            "shortDesc": "Transwing telemetry fresh",
+            "type": "uint8",
+            "enumStrings": "No,Yes,Unavailable",
+            "enumValues": "0,1,255"
+        },
+        {
+            "name": "vtolState",
+            "shortDesc": "VTOL state",
+            "type": "uint8",
+            "enumStrings": "Undefined,TransitionToFW,TransitionToMC,MC,FW",
+            "enumValues": "0,1,2,3,4"
+        },
+        {
+            "name": "landedState",
+            "shortDesc": "Landed state",
+            "type": "uint8",
+            "enumStrings": "Undefined,OnGround,InAir,Takeoff,Landing",
+            "enumValues": "0,1,2,3,4"
+        }
+    ]
+}
