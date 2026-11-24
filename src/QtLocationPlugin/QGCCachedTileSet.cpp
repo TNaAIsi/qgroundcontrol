@@ -1,13 +1,14 @@
 #include "QGCCachedTileSet.h"
 
 #include "ElevationMapProvider.h"
+#include "GcjTileReply.h"
 #include "QGCFormat.h"
 #include "QGCLoggingCategory.h"
 #include "QGCMapEngine.h"
 #include "QGCMapEngineManager.h"
-#include "QGCNetworkHelper.h"
 #include "QGCMapTasks.h"
 #include "QGCMapUrlEngine.h"
+#include "QGCNetworkHelper.h"
 #include "QGeoFileTileCacheQGC.h"
 #include "QGeoTileFetcherQGC.h"
 
@@ -152,7 +153,7 @@ void QGCCachedTileSet::_prepareDownload()
         request.setOriginatingObject(this);
         request.setAttribute(QNetworkRequest::User, tile->hash);
 
-        QNetworkReply* const reply = _networkManager->get(request);
+        QNetworkReply* const reply = fetchMapTile(_networkManager, request, tile->type, tile->x, tile->y, tile->z);
         reply->setParent(this);
         QGCNetworkHelper::ignoreSslErrorsIfNeeded(reply);
         (void) connect(reply, &QNetworkReply::finished, this, &QGCCachedTileSet::_networkReplyFinished);

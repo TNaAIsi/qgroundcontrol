@@ -6,6 +6,7 @@
 #include <QtNetwork/QSslError>
 
 #include "ElevationMapProvider.h"
+#include "GcjTileReply.h"
 #include "MapProvider.h"
 #include "QGCCacheTile.h"
 #include "QGCLoggingCategory.h"
@@ -221,7 +222,8 @@ void QGeoTiledMapReplyQGC::_cacheError(QGCMapTask::TaskType type, QStringView er
 
     _request.setOriginatingObject(this);
 
-    _networkReply = _networkManager->get(_request);
+    _networkReply =
+        fetchMapTile(_networkManager, _request, tileSpec().mapId(), tileSpec().x(), tileSpec().y(), tileSpec().zoom());
     if (!_networkReply) {
         setError(QGeoTiledMapReply::CommunicationError, tr("Failed to Create Network Reply"));
         return;
