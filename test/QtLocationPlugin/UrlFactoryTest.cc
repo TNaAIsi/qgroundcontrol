@@ -1,5 +1,14 @@
 #include "UrlFactoryTest.h"
 
+#include <QtCore/QBuffer>
+#include <QtCore/QUrlQuery>
+#include <QtGui/QImage>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtTest/QSignalSpy>
+
+#include "Gcj02Transform.h"
+#include "GcjTileReply.h"
 #include "MapProvider.h"
 #include "QGCMapUrlEngine.h"
 #include "QGCTileSet.h"
@@ -358,6 +367,100 @@ void UrlFactoryTest::_testGetMapProviderInvalid()
     expectLogMessage("QtLocationPlugin.QGCMapUrlEngine", QtWarningMsg, QRegularExpression("type not found:"));
     QVERIFY(UrlFactory::getMapProviderFromProviderType(QStringLiteral("Nonexistent")) == nullptr);
     verifyExpectedLogMessage();
+}
+
+void UrlFactoryTest::_testGcj02Cities()
+{
+    struct Reference
+    {
+        QGeoCoordinate wgs;
+        QGeoCoordinate gcj;
+    };
+
+    const Reference cities[] = {
+        {{39.9042, 116.4074}, {39.905603, 116.413642}},
+        {{31.2304, 121.4737}, {31.228458, 121.478223}},
+        {{22.5431, 114.0579}, {22.540383, 114.063014}},
+        {{30.5728, 104.0668}, {30.570346, 104.069305}},
+    };
+    for (const auto& city : cities) {
+        QVERIFY(Gcj02Transform::forward(city.wgs).distanceTo(city.gcj) < 1);
+        QVERIFY(Gcj02Transform::inverse(city.gcj).distanceTo(city.wgs) < 1);
+    }
+    const QGeoCoordinate outside(48.86, 2.35);
+    QCOMPARE(Gcj02Transform::forward(outside), outside);
+    QCOMPARE(Gcj02Transform::inverse(outside), outside);
+}
+
+void UrlFactoryTest::_testAMapTiles()
+{
+    const auto types = UrlFactory::getProviderTypes();
+    QCOMPARE(types.first(4), QStringList({"AMap Satellite", "AMap Road", "TianDiTu Road", "TianDiTu Satellite"}));
+    QVERIFY(types.contains("Bing Road"));
+    QVERIFY(!types.filter("Esri ").isEmpty());
+    QVERIFY(!types.filter("Mapbox ").isEmpty());
+    QCOMPARE(UrlFactory::getTileURL(u"AMap Satellite", 1, 2, 3).toString(),
+             QStringLiteral("https://webst02.is.autonavi.com/appmaptile?style=6&x=1&y=2&z=3"));
+    QCOMPARE(
+        UrlFactory::getTileURL(u"AMap Road", 1, 2, 3).toString(),
+        QStringLiteral("https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=1&y=2&z=3"));
+
+    const auto parts = Gcj02Transform::tileParts(53959, 24833, 16);
+    QCOMPARE(parts.size(), 4);
+    QCOMPARE(parts.first().index, QPoint(53960, 24832));
+    QCOMPARE(parts.first().source, QRect(35, 171, 221, 85));
+
+    class SyntheticTiles final : public QNetworkAccessManager
+    {
+    public:
+        bool corrupt = false;
+
+    private:
+        QNetworkReply* createRequest(Operation op, const QNetworkRequest& request, QIODevice* body) override
+        {
+            const QUrlQuery query(request.url());
+            const int col = query.queryItemValue("x").toInt() - 53960;
+            const int row = query.queryItemValue("y").toInt() - 24832;
+            QImage source(256, 256, QImage::Format_RGB32);
+            for (int y = 0; y < 256; ++y) {
+                for (int x = 0; x < 256; ++x) {
+                    source.setPixel(x, y, qRgb(x, y, col + 2 * row));
+                }
+            }
+            QBuffer buffer;
+            buffer.open(QIODevice::WriteOnly);
+            source.save(&buffer, "PNG");
+            const QByteArray bytes = corrupt && col == 0 && row == 0 ? QByteArray("invalid") : buffer.data();
+            QNetworkRequest local(QUrl("data:image/png;base64," + bytes.toBase64()));
+            return QNetworkAccessManager::createRequest(op, local, body);
+        }
+    } network;
+
+    const auto provider = UrlFactory::getMapProviderFromProviderType(u"AMap Road");
+    QVERIFY(provider);
+    auto* reply = fetchMapTile(&network, QNetworkRequest(provider->getTileURL(53959, 24833, 16)), provider->getMapId(),
+                               53959, 24833, 16);
+    QTRY_VERIFY_WITH_TIMEOUT(reply->isFinished(), 5000);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    const QImage stitched = QImage::fromData(reply->readAll());
+    QCOMPARE(stitched.size(), QSize(256, 256));
+    for (int y = 0; y < 256; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            QCOMPARE(stitched.pixel(x, y),
+                     qRgb((x + 35) % 256, (y + 171) % 256, (x + 35) / 256 + 2 * ((y + 171) / 256)));
+        }
+    }
+
+    network.corrupt = true;
+    const QNetworkRequest request(provider->getTileURL(53959, 24833, 16));
+    auto* failed = fetchMapTile(&network, request, provider->getMapId(), 53959, 24833, 16);
+    QSignalSpy finished(failed, &QNetworkReply::finished);
+    QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+    QCOMPARE(failed->error(), QNetworkReply::UnknownContentError);
+    auto* canceled = fetchMapTile(&network, request, provider->getMapId(), 53959, 24833, 16);
+    canceled->abort();
+    QVERIFY(canceled->isFinished());
+    QCOMPARE(canceled->error(), QNetworkReply::OperationCanceledError);
 }
 
 UT_REGISTER_TEST(UrlFactoryTest, TestLabel::Unit)

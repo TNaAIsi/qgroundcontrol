@@ -14,4 +14,7 @@ private slots:
     void _fieldsPopulatedTest();
     void _setTargetRateHzTest();
     void _updateFreqTest();
+    void _transwingV4DecodingTest();
+    void _transwingInstanceSeparationTest();
+    void _transwingClassificationTest();
 };

@@ -566,7 +566,7 @@ bool GPSReceiver::connectReceiver()
     if (asked && !serialPortAvailable(device)) {
         // A device that QGC may not open is listed without the name that survives replugging, so a device saved by
         // that name is not found until the user allows it. An automatic connection that waits for it goes on waiting.
-        _setError(tr("Allow QGroundControl to open the receiver's USB device, then connect."));
+        _setError(tr("Allow %1 to open the receiver's USB device, then connect.").arg(QCoreApplication::applicationName()));
         _emitChanges();
         return false;
     }

@@ -7,6 +7,9 @@ qt_add_plugin(QGCLocation
     STATIC
     CLASS_NAME QGeoServiceProviderFactoryQGC
     OUTPUT_TARGETS QGCLocation_targets
+    Providers/AMapProvider.cpp
+    Providers/Gcj02Transform.cpp
+    GcjTileReply.cpp
     Providers/BingMapProvider.cpp
     Providers/BingMapProvider.h
     Providers/ElevationMapProvider.cpp

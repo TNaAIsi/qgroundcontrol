@@ -16,6 +16,8 @@ target_sources(
         MAVLinkMessageField.h
         MAVLinkSystem.cc
         MAVLinkSystem.h
+        TranswingTelemetryDecoder.cc
+        TranswingTelemetryDecoder.h
 )
 
 # Shares the file-local kMinDelta with MAVLinkChartController.cc, so it cannot share a unity unit.

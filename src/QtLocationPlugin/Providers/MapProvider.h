@@ -54,6 +54,8 @@ public:
     virtual double tileY2lat(int y, int z) const;
 
     virtual bool isElevationProvider() const { return false; }
+
+    virtual bool requiresGcj02Correction() const { return false; }
     virtual bool isBingProvider() const { return false; }
 
     /// False hides the provider from user-facing provider selection lists

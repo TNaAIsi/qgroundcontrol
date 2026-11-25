@@ -1,22 +1,35 @@
 #include "QGCMapUrlEngine.h"
 
-#include "QGCTileSet.h"
+#include <algorithm>
 
-#include <QtCore/QtMinMax>
 #include <QtCore/QUrl>
+#include <QtCore/QtMinMax>
 
+#include "AMapProvider.h"
 #include "BingMapProvider.h"
 #include "ElevationMapProvider.h"
 #include "EsriMapProvider.h"
 #include "GenericMapProvider.h"
 #include "GoogleMapProvider.h"
 #include "MapboxMapProvider.h"
-#include "TianDiTuProvider.h"
 #include "QGCLoggingCategory.h"
+#include "QGCTileSet.h"
+#include "TianDiTuProvider.h"
 
 QGC_LOGGING_CATEGORY(QGCMapUrlEngineLog, "QtLocationPlugin.QGCMapUrlEngine")
 
-const QList<SharedMapProvider> UrlFactory::_providers = {
+// Preserve construction order because map IDs are persisted in the tile database.
+static QList<SharedMapProvider> orderProviders(QList<SharedMapProvider> providers)
+{
+    std::stable_partition(providers.begin(), providers.end(), [](const auto& provider) {
+        return dynamic_cast<const TianDiTuProvider*>(provider.get()) != nullptr;
+    });
+    providers.prepend(std::make_shared<AMapProvider>(MapProvider::StreetMap));
+    providers.prepend(std::make_shared<AMapProvider>(MapProvider::SatelliteMapDay));
+    return providers;
+}
+
+const QList<SharedMapProvider> UrlFactory::_providers = orderProviders({
 #ifndef QGC_NO_GOOGLE_MAPS
     std::make_shared<GoogleStreetMapProvider>(),
     std::make_shared<GoogleSatelliteMapProvider>(),
@@ -71,7 +84,7 @@ const QList<SharedMapProvider> UrlFactory::_providers = {
     std::make_shared<CustomURLMapProvider>(),
 
     std::make_shared<CopernicusElevationProvider>(),
-    std::make_shared<TerrariumElevationProvider>()};
+    std::make_shared<TerrariumElevationProvider>()});
 
 QString UrlFactory::getImageFormat(int qtMapId, QByteArrayView image)
 {

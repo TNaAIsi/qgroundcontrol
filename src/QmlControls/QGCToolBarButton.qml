@@ -36,7 +36,7 @@ Button {
             visible:                button.logo
             height:                 ScreenTools.defaultFontPixelHeight * 2
             width:                  height
-            source:                 visible ? button.icon.source : ""
+            source:                 visible ? (button.logo && button.icon.source.toString().endsWith("QGCLogoFull.svg") && qgcPal.globalTheme === QGCPalette.Light ? "/res/BGCLogoLight.svg" : button.icon.source) : ""
             anchors.verticalCenter: parent.verticalCenter
 
             Rectangle {
@@ -66,7 +66,7 @@ Button {
             sourceSize.height:      parent.height
             fillMode:               Image.PreserveAspectFit
             color:                  button.checked ? qgcPal.accentText : qgcPal.textPrimary
-            source:                 visible ? button.icon.source : ""
+            source:                 visible ? (button.logo && button.icon.source.toString().endsWith("QGCLogoFull.svg") && qgcPal.globalTheme === QGCPalette.Light ? "/res/BGCLogoLight.svg" : button.icon.source) : ""
             anchors.verticalCenter: parent.verticalCenter
         }
         Label {

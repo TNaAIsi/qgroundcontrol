@@ -247,6 +247,7 @@ public:
     Q_PROPERTY(FactGroup*           clock           READ clockFactGroup             CONSTANT)
     Q_PROPERTY(FactGroup*           setpoint        READ setpointFactGroup          CONSTANT)
     Q_PROPERTY(FactGroup*           estimatorStatus READ estimatorStatusFactGroup   CONSTANT)
+    Q_PROPERTY(FactGroup* transwing READ transwingFactGroup CONSTANT)
     Q_PROPERTY(FactGroup*           terrain         READ terrainFactGroup           CONSTANT)
     Q_PROPERTY(FactGroup*           distanceSensors READ distanceSensorFactGroup    CONSTANT)
     Q_PROPERTY(FactGroup*           localPosition   READ localPositionFactGroup     CONSTANT)
@@ -573,6 +574,7 @@ public:
 
     FactGroup* vehicleFactGroup() { return _vehicleFactGroup; }
 
+    FactGroup* transwingFactGroup() { return _transwingFactGroup; }
     VehicleGPSFactGroup* gpsFactGroup();
     VehicleGPSFactGroup* gps2FactGroup();
     FactGroup* windFactGroup                ();
@@ -1121,6 +1123,7 @@ public:
     const QString _localPositionFactGroupName =      QStringLiteral("localPosition");
     const QString _localPositionSetpointFactGroupName = QStringLiteral("localPositionSetpoint");
     const QString _estimatorStatusFactGroupName =    QStringLiteral("estimatorStatus");
+    const QString _transwingFactGroupName = QStringLiteral("transwing");
     const QString _terrainFactGroupName =            QStringLiteral("terrain");
     const QString _hygrometerFactGroupName =         QStringLiteral("hygrometer");
     const QString _generatorFactGroupName =          QStringLiteral("generator");
@@ -1140,6 +1143,7 @@ public:
     VehicleLocalPositionFactGroup*      _localPositionFactGroup     = nullptr;
     VehicleLocalPositionSetpointFactGroup* _localPositionSetpointFactGroup = nullptr;
     VehicleEstimatorStatusFactGroup*    _estimatorStatusFactGroup   = nullptr;
+    FactGroup* _transwingFactGroup = nullptr;
     VehicleHygrometerFactGroup*         _hygrometerFactGroup        = nullptr;
     VehicleGeneratorFactGroup*          _generatorFactGroup         = nullptr;
     VehicleEFIFactGroup*                _efiFactGroup               = nullptr;

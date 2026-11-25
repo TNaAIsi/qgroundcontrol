@@ -7,6 +7,8 @@ class UrlFactoryTest : public UnitTest
     Q_OBJECT
 
 private slots:
+    void _testAMapTiles();
+    void _testGcj02Cities();
     void _testGetProviderTypesNotEmpty();
     void _testGetProviderTypesContainsBing();
     void _testGetElevationProviderTypes();

@@ -76,6 +76,7 @@
 #include "VehicleSigningController.h"
 #include "VehicleSupports.h"
 #include "VehicleTemperatureFactGroup.h"
+#include "VehicleTranswingFactGroup.h"
 #include "VehicleVibrationFactGroup.h"
 #include "VehicleWindFactGroup.h"
 #include "VideoSettings.h"
@@ -327,6 +328,7 @@ void Vehicle::_commonInit(LinkInterface* link)
     _localPositionFactGroup         = new VehicleLocalPositionFactGroup(this);
     _localPositionSetpointFactGroup = new VehicleLocalPositionSetpointFactGroup(this);
     _estimatorStatusFactGroup       = new VehicleEstimatorStatusFactGroup(this);
+    _transwingFactGroup = new VehicleTranswingFactGroup(this);
     _hygrometerFactGroup            = new VehicleHygrometerFactGroup(this);
     _generatorFactGroup             = new VehicleGeneratorFactGroup(this);
     _efiFactGroup                   = new VehicleEFIFactGroup(this);
@@ -358,6 +360,7 @@ void Vehicle::_commonInit(LinkInterface* link)
     _addFactGroup(_localPositionFactGroup,     _localPositionFactGroupName);
     _addFactGroup(_localPositionSetpointFactGroup,_localPositionSetpointFactGroupName);
     _addFactGroup(_estimatorStatusFactGroup,   _estimatorStatusFactGroupName);
+    _addFactGroup(_transwingFactGroup, _transwingFactGroupName);
     _addFactGroup(_hygrometerFactGroup,        _hygrometerFactGroupName);
     _addFactGroup(_generatorFactGroup,         _generatorFactGroupName);
     _addFactGroup(_efiFactGroup,               _efiFactGroupName);

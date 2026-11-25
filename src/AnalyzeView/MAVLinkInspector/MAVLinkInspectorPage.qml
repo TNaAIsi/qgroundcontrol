@@ -18,6 +18,36 @@ AnalyzePage {
     property var    curMessage:         curSystem && curSystem.messages.count ? curSystem.messages.get(curSystem.selected) : null
     property int    curCompID:          0
     property real   maxButtonWidth:     0
+    property bool   transwingOnly:      false
+
+    function selectFirstTranswingMessage() {
+        if (!curSystem || !curSystem.messages || curSystem.messages.count === 0) {
+            return
+        }
+        if (curMessage && curMessage.isTranswing && (curCompID === 0 || curCompID === curMessage.compId)) {
+            return
+        }
+        let fallbackIdx = -1
+        for (let i = 0; i < curSystem.messages.count; i++) {
+            const msg = curSystem.messages.get(i)
+            if (!msg || !msg.isTranswing) {
+                continue
+            }
+            if (curCompID !== 0 && curCompID !== msg.compId) {
+                continue
+            }
+            if (msg.isTranswingStatus) {
+                curSystem.selected = i
+                return
+            }
+            if (fallbackIdx < 0) {
+                fallbackIdx = i
+            }
+        }
+        if (fallbackIdx >= 0) {
+            curSystem.selected = fallbackIdx
+        }
+    }
 
     MAVLinkInspectorController {
         id: controller
@@ -105,48 +135,87 @@ AnalyzePage {
 
     Component {
         id:                         pageComponent
-        Row {
+        ColumnLayout {
             width:                  availableWidth
             height:                 availableHeight
-            spacing:                ScreenTools.defaultFontPixelWidth
-            //-- Messages (Buttons)
-            QGCFlickable {
-                id:                 buttonGrid
-                flickableDirection: Flickable.VerticalFlick
-                width:              maxButtonWidth
-                height:             parent.height
-                contentWidth:       width
-                contentHeight:      buttonCol.height
-                ColumnLayout {
-                    id:             buttonCol
-                    anchors.left:   parent.left
-                    anchors.right:  parent.right
-                    spacing:        ScreenTools.defaultFontPixelHeight * 0.25
-                    Repeater {
-                        model:      curSystem ? curSystem.messages : []
-                        delegate:   MAVLinkMessageButton {
-                            text:       object.name + (object.fieldSelected ?  " *" : "")
-                            compID:     object.compId
-                            checked:    curSystem ? (curSystem.selected === index) : false
-                            messageHz:  object.actualRateHz
-                            visible:    curCompID === 0 || curCompID === compID
-                            onClicked: {
-                                curSystem.selected = index
+            spacing:                ScreenTools.defaultFontPixelHeight * 0.5
+
+            // Filter bar lives inside pageComponent so it remains visible on short Android screens
+            RowLayout {
+                id:                 filterBar
+                Layout.fillWidth:   true
+                spacing:            ScreenTools.defaultFontPixelWidth * 0.5
+
+                QGCButton {
+                    text:           qsTr("All")
+                    checkable:      true
+                    checked:        !root.transwingOnly
+                    onClicked:      root.transwingOnly = false
+                }
+                QGCButton {
+                    text:           qsTr("Transwing")
+                    checkable:      true
+                    checked:        root.transwingOnly
+                    onClicked: {
+                        root.transwingOnly = true
+                        root.selectFirstTranswingMessage()
+                    }
+                }
+                Item { Layout.fillWidth: true }
+            }
+
+            Row {
+                Layout.fillWidth:   true
+                Layout.fillHeight:  true
+                spacing:            ScreenTools.defaultFontPixelWidth
+                //-- Messages (Buttons)
+                QGCFlickable {
+                    id:                 buttonGrid
+                    flickableDirection: Flickable.VerticalFlick
+                    width:              maxButtonWidth
+                    height:             parent.height
+                    contentWidth:       width
+                    contentHeight:      buttonCol.height
+                    ColumnLayout {
+                        id:             buttonCol
+                        anchors.left:   parent.left
+                        anchors.right:  parent.right
+                        spacing:        ScreenTools.defaultFontPixelHeight * 0.25
+                        Repeater {
+                            model:      curSystem ? curSystem.messages : []
+                            delegate:   MAVLinkMessageButton {
+                                text:       object.name + (object.fieldSelected ?  " *" : "")
+                                compID:     object.compId
+                                checked:    curSystem ? (curSystem.selected === index) : false
+                                messageHz:  object.actualRateHz
+                                visible:    (curCompID === 0 || curCompID === compID) && (!root.transwingOnly || object.isTranswing)
+                                onClicked: {
+                                    curSystem.selected = index
+                                }
+                                Layout.fillWidth: true
                             }
-                            Layout.fillWidth: true
                         }
                     }
                 }
-            }
-            //-- Message Data
-            QGCFlickable {
-                id:                 messageGrid
-                visible:            curMessage !== null && (curCompID === 0 || curCompID === curMessage.compId)
-                flickableDirection: Flickable.VerticalFlick
-                width:              parent.width - buttonGrid.width - ScreenTools.defaultFontPixelWidth
-                height:             parent.height
-                contentWidth:       width
-                contentHeight:      messageCol.height
+                //-- Empty state for Transwing filter
+                QGCLabel {
+                    visible:            root.transwingOnly && (!curMessage || !curMessage.isTranswing || (curCompID !== 0 && curCompID !== curMessage.compId))
+                    width:              parent.width - buttonGrid.width - ScreenTools.defaultFontPixelWidth
+                    height:             parent.height
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment:  Text.AlignVCenter
+                    wrapMode:           Text.WordWrap
+                    text:               qsTr("Waiting for Transwing telemetry (DEBUG_FLOAT_ARRAY #350 TRANSWING v4 or VTOL messages)...")
+                }
+                //-- Message Data
+                QGCFlickable {
+                    id:                 messageGrid
+                    visible:            curMessage !== null && (curCompID === 0 || curCompID === curMessage.compId) && (!root.transwingOnly || curMessage.isTranswing)
+                    flickableDirection: Flickable.VerticalFlick
+                    width:              parent.width - buttonGrid.width - ScreenTools.defaultFontPixelWidth
+                    height:             parent.height
+                    contentWidth:       width
+                    contentHeight:      messageCol.height
                 Column {
                     id:                 messageCol
                     width:              parent.width
@@ -215,7 +284,202 @@ AnalyzePage {
                             }
                         }
                     }
-                    Item { height: ScreenTools.defaultFontPixelHeight; width: 1 }
+                    Item { height: ScreenTools.defaultFontPixelHeight * 0.5; width: 1 }
+                    //-- Transwing v4 Structured Summary
+                    ColumnLayout {
+                        id:         transwingSummarySection
+                        visible:    curMessage !== null && curMessage.isTranswingStatus
+                        width:      parent.width
+                        spacing:    ScreenTools.defaultFontPixelHeight * 0.5
+
+                        // Group 1: Mechanism
+                        Rectangle {
+                            Layout.fillWidth:   true
+                            implicitHeight:     mechCol.implicitHeight + ScreenTools.defaultFontPixelHeight
+                            color:              qgcPal.windowShade
+                            radius:             ScreenTools.defaultFontPixelHeight * 0.25
+                            ColumnLayout {
+                                id:             mechCol
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                anchors.top:    parent.top
+                                anchors.margins: ScreenTools.defaultFontPixelHeight * 0.5
+                                spacing:        ScreenTools.defaultFontPixelHeight * 0.25
+                                QGCLabel {
+                                    text:       qsTr("Mechanism / 机构")
+                                    font.bold:  true
+                                    color:      qgcPal.accent
+                                }
+                                GridLayout {
+                                    Layout.fillWidth: true
+                                    columns:        ScreenTools.isShortScreen ? 2 : 4
+                                    columnSpacing:  ScreenTools.defaultFontPixelWidth
+                                    rowSpacing:     ScreenTools.defaultFontPixelHeight * 0.25
+                                    Repeater {
+                                        model: [
+                                            { label: qsTr("Wing Angle"),     fieldIdx: 2,  unit: "°" },
+                                            { label: qsTr("Wing Setpoint"),  fieldIdx: 3,  unit: "°" },
+                                            { label: qsTr("Rate SP"),        fieldIdx: 4,  unit: "°/s" },
+                                            { label: qsTr("Accel SP"),       fieldIdx: 5,  unit: "°/s²" },
+                                            { label: qsTr("Jerk SP"),        fieldIdx: 6,  unit: "°/s³" },
+                                            { label: qsTr("Collective Tilt"),fieldIdx: 7,  unit: "°" },
+                                            { label: qsTr("Tracking Error"), fieldIdx: 8,  unit: "°" },
+                                            { label: qsTr("Sample Age"),     fieldIdx: 12, unit: "ms" }
+                                        ]
+                                        delegate: ColumnLayout {
+                                            readonly property var fieldObj: (curMessage && curMessage.isTranswingStatus && modelData.fieldIdx < curMessage.fields.count) ? curMessage.fields.get(modelData.fieldIdx) : null
+                                            Layout.fillWidth: true
+                                            spacing: 0
+                                            QGCLabel {
+                                                text:       modelData.label
+                                                font.pointSize: ScreenTools.smallFontPointSize
+                                                color:      qgcPal.textSecondary
+                                            }
+                                            QGCLabel {
+                                                text:       (fieldObj ? fieldObj.value : "-") + (modelData.unit ? " " + modelData.unit : "")
+                                                font.bold:  true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Group 2: Transition
+                        Rectangle {
+                            Layout.fillWidth:   true
+                            implicitHeight:     transCol.implicitHeight + ScreenTools.defaultFontPixelHeight
+                            color:              qgcPal.windowShade
+                            radius:             ScreenTools.defaultFontPixelHeight * 0.25
+                            ColumnLayout {
+                                id:             transCol
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                anchors.top:    parent.top
+                                anchors.margins: ScreenTools.defaultFontPixelHeight * 0.5
+                                spacing:        ScreenTools.defaultFontPixelHeight * 0.25
+                                QGCLabel {
+                                    text:       qsTr("Transition / 转换")
+                                    font.bold:  true
+                                    color:      qgcPal.accent
+                                }
+                                GridLayout {
+                                    Layout.fillWidth: true
+                                    columns:        ScreenTools.isShortScreen ? 2 : 4
+                                    columnSpacing:  ScreenTools.defaultFontPixelWidth
+                                    rowSpacing:     ScreenTools.defaultFontPixelHeight * 0.25
+                                    Repeater {
+                                        model: [
+                                            { label: qsTr("Phase"),          fieldIdx: 9,  unit: "" },
+                                            { label: qsTr("FW Weight"),      fieldIdx: 10, unit: "" },
+                                            { label: qsTr("Complete"),       fieldIdx: 19, unit: "" },
+                                            { label: qsTr("Abort Reason"),   fieldIdx: 16, unit: "" },
+                                            { label: qsTr("Attitude Error"), fieldIdx: 13, unit: "°" },
+                                            { label: qsTr("Tilt Error"),     fieldIdx: 21, unit: "°" },
+                                            { label: qsTr("Heading Error"),  fieldIdx: 22, unit: "°" },
+                                            { label: qsTr("Altitude Loss"),  fieldIdx: 14, unit: "m" },
+                                            { label: qsTr("Collective Cmd"), fieldIdx: 15, unit: "" }
+                                        ]
+                                        delegate: ColumnLayout {
+                                            readonly property var fieldObj: (curMessage && curMessage.isTranswingStatus && modelData.fieldIdx < curMessage.fields.count) ? curMessage.fields.get(modelData.fieldIdx) : null
+                                            Layout.fillWidth: true
+                                            spacing: 0
+                                            QGCLabel {
+                                                text:       modelData.label
+                                                font.pointSize: ScreenTools.smallFontPointSize
+                                                color:      qgcPal.textSecondary
+                                            }
+                                            QGCLabel {
+                                                text:       (fieldObj ? fieldObj.value : "-") + (modelData.unit ? " " + modelData.unit : "")
+                                                font.bold:  true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Group 3: Handover & Protection
+                        Rectangle {
+                            Layout.fillWidth:   true
+                            implicitHeight:     handoverCol.implicitHeight + ScreenTools.defaultFontPixelHeight
+                            color:              qgcPal.windowShade
+                            radius:             ScreenTools.defaultFontPixelHeight * 0.25
+                            ColumnLayout {
+                                id:             handoverCol
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                anchors.top:    parent.top
+                                anchors.margins: ScreenTools.defaultFontPixelHeight * 0.5
+                                spacing:        ScreenTools.defaultFontPixelHeight * 0.25
+                                QGCLabel {
+                                    text:       qsTr("Handover & Protection / 接管与保护")
+                                    font.bold:  true
+                                    color:      qgcPal.accent
+                                }
+                                GridLayout {
+                                    Layout.fillWidth: true
+                                    columns:        ScreenTools.isShortScreen ? 2 : 4
+                                    columnSpacing:  ScreenTools.defaultFontPixelWidth
+                                    rowSpacing:     ScreenTools.defaultFontPixelHeight * 0.25
+                                    Repeater {
+                                        model: [
+                                            { label: qsTr("Takeover Avail"), fieldIdx: 17, unit: "" },
+                                            { label: qsTr("Control Owner"),  fieldIdx: 18, unit: "" },
+                                            { label: qsTr("Handover Age"),   fieldIdx: 20, unit: "ms" },
+                                            { label: qsTr("Status Mask"),    fieldIdx: 11, unit: "" }
+                                        ]
+                                        delegate: ColumnLayout {
+                                            readonly property var fieldObj: (curMessage && curMessage.isTranswingStatus && modelData.fieldIdx < curMessage.fields.count) ? curMessage.fields.get(modelData.fieldIdx) : null
+                                            Layout.fillWidth: true
+                                            spacing: 0
+                                            QGCLabel {
+                                                text:       modelData.label
+                                                font.pointSize: ScreenTools.smallFontPointSize
+                                                color:      qgcPal.textSecondary
+                                            }
+                                            QGCLabel {
+                                                text:       (fieldObj ? fieldObj.value : "-") + (modelData.unit ? " " + modelData.unit : "")
+                                                font.bold:  true
+                                            }
+                                        }
+                                    }
+                                }
+                                Flow {
+                                    Layout.fillWidth: true
+                                    spacing:        ScreenTools.defaultFontPixelWidth * 0.5
+                                    Repeater {
+                                        model: [
+                                            { label: qsTr("Wing Valid"),    fieldIdx: 23 },
+                                            { label: qsTr("FB Healthy"),    fieldIdx: 24 },
+                                            { label: qsTr("Trk OK"),        fieldIdx: 25 },
+                                            { label: qsTr("Flight Ctrl"),   fieldIdx: 26 },
+                                            { label: qsTr("Ground Test"),   fieldIdx: 27 },
+                                            { label: qsTr("FB Hold"),       fieldIdx: 28 },
+                                            { label: qsTr("Pilot Locked"),  fieldIdx: 29 },
+                                            { label: qsTr("Fresh"),         fieldIdx: 30 }
+                                        ]
+                                        delegate: Rectangle {
+                                            readonly property var fieldObj: (curMessage && curMessage.isTranswingStatus && modelData.fieldIdx < curMessage.fields.count) ? curMessage.fields.get(modelData.fieldIdx) : null
+                                            readonly property bool flagActive: fieldObj !== null && fieldObj.value.indexOf("1") === 0
+                                            implicitWidth:  flagLabel.implicitWidth + ScreenTools.defaultFontPixelWidth
+                                            implicitHeight: flagLabel.implicitHeight + ScreenTools.defaultFontPixelHeight * 0.3
+                                            radius:         ScreenTools.defaultFontPixelHeight * 0.2
+                                            color:          flagActive ? qgcPal.colorGreen : qgcPal.windowShadeDark
+                                            QGCLabel {
+                                                id:                 flagLabel
+                                                anchors.centerIn:   parent
+                                                text:               modelData.label
+                                                font.pointSize:     ScreenTools.smallFontPointSize
+                                                color:              flagActive ? qgcPal.accentText : qgcPal.textSecondary
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Item { height: ScreenTools.defaultFontPixelHeight * 0.5; width: 1 }
                     //---------------------------------------------------------
                     GridLayout {
                         id:                 msgInfoGrid
@@ -335,6 +599,7 @@ AnalyzePage {
                         chartIndex:             1
                     }
                 }
+            }
             }
         }
     }

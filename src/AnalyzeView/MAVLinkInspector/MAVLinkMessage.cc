@@ -8,6 +8,7 @@
 #include "MAVLinkMessageInfo.h"
 #include "QGCLoggingCategory.h"
 #include "QmlObjectListModel.h"
+#include "TranswingTelemetryDecoder.h"
 
 QGC_LOGGING_CATEGORY(MAVLinkMessageLog, "AnalyzeView.MAVLinkMessage")
 
@@ -16,8 +17,17 @@ QGCMAVLinkMessage::QGCMAVLinkMessage(const mavlink_message_t &message, const QSt
     , _message(message)
     , _fields(new QmlObjectListModel(this))
     , _instanceValue(instanceValue)
+    , _isTranswing(TranswingTelemetryDecoder::isTranswingMessage(message))
+    , _isTranswingStatus(TranswingTelemetryDecoder::isTranswingV4Snapshot(message))
 {
     qCDebug(MAVLinkMessageLog) << this;
+
+    if (_isTranswingStatus) {
+        _name = QStringLiteral("TRANSWING_STATUS [v4]");
+        TranswingTelemetryDecoder::initTranswingV4Fields(_fields, this);
+        qCDebug(MAVLinkMessageLog) << "New Message:" << _name;
+        return;
+    }
 
     const mavlink_message_info_t* const msgInfo = MAVLinkMessageInfo::byId(message.msgid);
     if (!msgInfo) {
@@ -78,6 +88,10 @@ QGCMAVLinkMessage::~QGCMAVLinkMessage()
 
 QString QGCMAVLinkMessage::extractInstanceValue(const mavlink_message_t &message)
 {
+    if (message.msgid == MAVLINK_MSG_ID_DEBUG_FLOAT_ARRAY) {
+        return TranswingTelemetryDecoder::extractDebugFloatArrayInstance(message);
+    }
+
     const QString instanceFieldName = mavlinkInstanceFields().value(message.msgid);
     if (instanceFieldName.isEmpty()) {
         // Special-case debug messages that use name/ind as implicit instance discriminator
@@ -175,6 +189,9 @@ QString QGCMAVLinkMessage::_extractDebugInstanceValue(const mavlink_message_t &m
     case MAVLINK_MSG_ID_DEBUG: {
         return QString::number(mavlink_msg_debug_get_ind(&message));
     }
+    case MAVLINK_MSG_ID_DEBUG_FLOAT_ARRAY: {
+        return TranswingTelemetryDecoder::extractDebugFloatArrayInstance(message);
+    }
     default:
         return QString();
     }
@@ -240,6 +257,11 @@ void QGCMAVLinkMessage::update(const mavlink_message_t &message)
 
 void QGCMAVLinkMessage::_updateFields()
 {
+    if (_isTranswingStatus) {
+        TranswingTelemetryDecoder::updateTranswingV4Fields(_message, _fields);
+        return;
+    }
+
     const mavlink_message_info_t* msgInfo = MAVLinkMessageInfo::byId(_message.msgid);
     if (!msgInfo) {
         qCWarning(MAVLinkMessageLog) << "QGCMAVLinkMessage::update NULL msgInfo msgid" << _message.msgid;

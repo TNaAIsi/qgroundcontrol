@@ -80,6 +80,7 @@ target_include_directories(QGCUnitTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 # Component Information Tests
 # ----------------------------------------------------------------------------
 add_subdirectory(ComponentInformation)
+add_subdirectory(FactGroups)
 
 add_qgc_test(APMAirframeComponentControllerTest LABELS Integration Vehicle)
 add_qgc_test(APMCalibrationStatusTextTest LABELS Integration Vehicle)
