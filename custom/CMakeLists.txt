@@ -23,9 +23,19 @@ if(ANDROID)
 
             file(REMOVE_RECURSE "${FINAL_ANDROID_DIR}")
             file(COPY "${DEFAULT_ANDROID_DIR}/" DESTINATION "${FINAL_ANDROID_DIR}")
-            file(COPY "${CUSTOM_ANDROID_DIR}/" DESTINATION "${FINAL_ANDROID_DIR}")
+            foreach(_custom_android_file IN LISTS CUSTOM_ANDROID_FILES)
+                file(RELATIVE_PATH _rel_path "${CUSTOM_ANDROID_DIR}" "${_custom_android_file}")
+                set(_dest_file "${FINAL_ANDROID_DIR}/${_rel_path}")
+                cmake_path(GET _dest_file PARENT_PATH _dest_dir)
+                file(MAKE_DIRECTORY "${_dest_dir}")
+                file(COPY_FILE "${_custom_android_file}" "${_dest_file}")
+            endforeach()
+            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CUSTOM_ANDROID_FILES})
 
-            set(QGC_ANDROID_PACKAGE_SOURCE_DIR "${FINAL_ANDROID_DIR}")
+            set(QGC_ANDROID_PACKAGE_SOURCE_DIR
+                "${FINAL_ANDROID_DIR}"
+                CACHE PATH "Android package source directory" FORCE
+            )
             set(QGC_ANDROID_PACKAGE_SOURCE_DIR "${FINAL_ANDROID_DIR}" PARENT_SCOPE)
         endif()
     endif()
